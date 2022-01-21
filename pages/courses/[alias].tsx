@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { GetStaticProps, GetStaticPropsContext } from 'next';
+import { GetStaticPaths, GetStaticProps, GetStaticPropsContext } from 'next';
 import { ParsedUrlQuery } from 'node:querystring';
 import { MenuItem } from '../../interfaces/menu.interface';
 import { TopPageModel } from '../../interfaces/page.interface';
@@ -13,6 +13,17 @@ function Course({ menu, page, products }: CourseProps): JSX.Element {
 }
 
 export default withLayout(Course);
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const { data: menu } = await axios.post<MenuItem[]>(
+    process.env.NEXT_PUBLIC_DOMAIN + '/api/top-page/find',
+    { firstCategory }
+  );
+  return {
+    paths: menu.flatMap((m) => m.pages.map((p) => '/courses/' + p.alias)),
+    fallback: true,
+  };
+};
 
 export const getStaticProps: GetStaticProps<CourseProps> = async ({
   params,
